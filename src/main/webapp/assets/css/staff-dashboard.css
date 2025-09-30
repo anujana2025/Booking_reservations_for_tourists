@@ -1,0 +1,159 @@
+:root{
+    --primary:#0A8C57;
+    --text:#333;
+    --muted:#777;
+    --bg:#f5f5f5;
+    --card:#fff;
+    --border:#e7e7e7;
+    --sidebar:260px;
+    --header:64px;
+    --footer-height: 60px;
+
+    /* aliases for components that expect these names */
+    --border-color: var(--border);
+    --light-text: var(--muted);
+}
+
+/* Base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+    margin:0;
+    font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--text);
+    background:var(--bg);
+}
+
+/* Layout */
+.layout{
+    display:grid;
+    grid-template-columns: var(--sidebar) 1fr;
+    min-height:100vh;
+}
+
+/* Sidebar */
+.sidebar{
+    background:#fff;
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+}
+.sidebar__header{
+    padding:18px 20px;
+    border-bottom:1px solid var(--border);
+}
+.logo{height:40px; display:block}
+
+.sidebar__nav{
+    padding:10px;
+    overflow:auto;
+    flex:1;
+}
+.nav{list-style:none; margin:0; padding:0}
+.nav__link{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 14px; margin:4px 0;
+    border-radius:10px; color:var(--text);
+    text-decoration:none; transition:.2s ease;
+}
+.nav__link i{width:20px; text-align:center}
+.nav__link:hover{background:#f0f7f4; color:var(--primary)}
+
+.sidebar__footer{
+    padding:14px; border-top:1px solid var(--border);
+}
+.me-card{
+    display:flex; align-items:center; gap:10px;
+    padding:10px; background:#f8faf9; border-radius:10px;
+    margin-bottom:10px; text-decoration:none; color:inherit;
+}
+.me-card__avatar img{
+    width:42px; height:42px; border-radius:50%; object-fit:cover
+}
+.me-card__name{font-weight:600; font-size:14px}
+.me-card__role{color:var(--muted); font-size:12px; text-transform:capitalize}
+.logout{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border:1px solid var(--border);
+    border-radius:10px; text-decoration:none; color:var(--text);
+}
+.logout:hover{border-color:var(--primary); color:var(--primary)}
+
+/* Main */
+.main{display:flex; flex-direction:column; min-width:0}
+
+/* Top app bar */
+.main__header{
+    position:sticky; top:0; z-index:5;
+    height:var(--header);
+    background:#fff; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px;
+}
+.greet{margin:0; font-size:18px; font-weight:600}
+.pill{
+    display:inline-flex; gap:8px; align-items:center;
+    padding:6px 10px; border-radius:999px;
+    background:#f0f7f4; color:var(--primary); font-weight:600; font-size:12px
+}
+
+/* Centered page container */
+.container{
+    width:100%;
+    max-width:1120px;
+    margin:0 auto;
+    flex-grow: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+/* Page title block */
+.page-intro{
+    background:#fff; border:1px solid var(--border);
+    border-radius:14px; padding:22px; margin-bottom:18px;
+}
+.page-intro h2{margin:0 0 6px; font-size:22px}
+.page-intro p{margin:0; color:var(--muted)}
+
+/* Cards grid */
+.cards{
+    display:grid; gap:16px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.card{
+    display:flex; gap:14px; align-items:flex-start;
+    padding:16px; background:var(--card);
+    border:1px solid var(--border); border-radius:14px;
+    text-decoration:none; color:inherit; transition:.2s;
+    box-shadow:0 1px 2px rgba(0,0,0,.03)
+}
+.card:hover{border-color:var(--primary); transform:translateY(-1px)}
+.card i{font-size:22px; color:var(--primary)}
+.card h3{margin:0 0 6px; font-size:16px}
+.card p{margin:0; color:var(--muted); font-size:13px}
+
+/* Footer message */
+.main__footer{
+    margin-top: auto;
+    height: var(--footer-height);
+    background-color: white;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 30px;
+    font-size: 12px;
+    color: var(--light-text);
+}
+
+/* Responsive */
+@media (max-width: 1024px){
+    :root{ --sidebar:92px }
+    .layout{grid-template-columns:var(--sidebar) 1fr}
+    .nav__link span{display:none}
+    .nav__link{justify-content:center}
+}
+@media (max-width: 640px){
+    .container{padding:18px}
+}
+
