@@ -1,111 +1,159 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-
-<%-- =========================
-     1) Read context + optional query messages
-     ========================= --%>
 <%
-  String ctx = request.getContextPath();               // Base path for links/assets (works under any context root)
-  String err = request.getParameter("error");          // Optional: "invalid" or "required" to show alerts
-  String ok  = request.getParameter("success");        // Optional: e.g., "1" after signup to show success
+  String ctx = request.getContextPath();
 %>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Meta + title -->
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Staff Sign In</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Staff Sign Up - Hotel Reservation System</title>
 
-  <!-- Google Fonts (Poppins) -->
+  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Bootstrap CSS for layout/components -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Font Awesome (icons) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Page stylesheet (your custom styles) -->
-  <link rel="stylesheet" href="<%=ctx%>/assets/css/signin.css">
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Page CSS -->
+  <link rel="stylesheet" href="<%=ctx%>/assets/css/signup.css">
 </head>
 <body>
+<div class="container-fluid auth-container d-flex">
+  <!-- Left: image -->
+  <div class="col-lg-6 d-none d-lg-block auth-image"></div>
 
-<!-- Full-height container: two columns (image left, form right) -->
-<div class="container-fluid min-vh-100 d-flex">
-  <!-- Left Side: decorative/auth image; hidden on small screens -->
-  <div class="col-md-6 d-none d-md-block auth-image"></div>
-
-  <!-- Right Side: sign-in form centered -->
-  <div class="col-md-6 d-flex align-items-center justify-content-center">
-    <div class="w-75"><!-- limit content width for nice readable form -->
-
+  <!-- Right: form (centered like admin) -->
+  <div class="col-lg-6 d-flex flex-column auth-form-container">
+    <div class="auth-form-content">
       <!-- Logo -->
-      <div class="text-center mb-4">
-        <img src="<%=ctx%>/assets/images/logo2.png" alt="Logo" class="img-fluid" style="max-width:150px;">
+      <div class="logo-container text-center">
+        <img class="logo" src="<%=ctx%>/assets/images/logo2.png" alt="Logo">
       </div>
 
-      <!-- Page heading -->
-      <h1 class="text-center">Staff Sign In</h1>
-      <p class="text-muted text-center">Access your staff account</p>
+      <!-- Heading -->
+      <h1 class="text-center">Create Staff Account</h1>
+      <p class="subtitle text-center">Fill in your details to register as a staff member.</p>
 
-      <%-- =========================
-           2) Flash messages (from query params)
-           ========================= --%>
-      <% if ("invalid".equals(err)) { %>
-      <div class="alert alert-danger text-center py-2">Invalid email or password.</div>
-      <% } else if ("required".equals(err)) { %>
-      <div class="alert alert-warning text-center py-2">Please fill in both fields.</div>
+      <!-- Optional flash messages -->
+      <%
+        String code = request.getParameter("error");
+        String ok   = request.getParameter("success");
+        if (ok != null) {
+      %>
+      <div class="alert alert-success" role="alert">Registered successfully.</div>
+      <%
+      } else if (code != null) {
+        String msg = switch (code) {
+          case "email_exists"      -> "An account with this email already exists. Please <a class='auth-link' href='" + ctx + "/staff-login.jsp'>sign in</a>.";
+          case "missing"           -> "Please fill in all required fields.";
+          case "desk_required"     -> "Front Desk staff must provide a desk code.";
+          case "campaigns_required"-> "Marketing staff must provide campaigns managed.";
+          case "campaigns_number"  -> "Campaigns managed must be a valid number.";
+          case "role_required"     -> "Manager must have a role specified.";
+          case "spec_required"     -> "IT staff must provide a specialization.";
+          case "type_invalid"      -> "Invalid staff type.";
+          case "server"            -> "Something went wrong. Please try again.";
+          default                  -> "Unexpected error.";
+        };
+      %>
+      <div class="auth-error"><%= msg %></div>
       <% } %>
 
-      <%-- You could also show success after signup like:
-         <% if ("1".equals(ok)) { %>
-            <div class="alert alert-success text-center py-2">Account created. Please sign in.</div>
-         <% } %>
-      --%>
-
-      <!-- =========================
-           3) Sign-in form: posts to /StaffSignin
-           Backend should:
-             - validate identifier (email or phone) + password
-             - set session attributes on success
-             - redirect back with ?error=invalid on failure
-           ========================= -->
-      <form action="<%=ctx%>/StaffSignin" method="post">
-        <!-- Email or Phone -->
-        <div class="mb-3">
-          <input type="text" name="identifier" class="form-control" placeholder="Email or Phone" required>
-        </div>
-
-        <!-- Password + forgot link -->
-        <div class="mb-3">
-          <input type="password" name="password" class="form-control" placeholder="Password" required>
-          <div class="text-end mt-1">
-            <a href="<%=ctx%>/staff-forgot-password.jsp" class="text-decoration-none small">Forgot Password?</a>
+      <!-- Form -->
+      <form class="auth-form" action="<%=ctx%>/StaffSignup" method="post" novalidate>
+        <!-- Common fields -->
+        <div class="row g-3">
+          <div class="col-sm-6 form-group">
+            <input type="text" name="firstname" class="form-control" placeholder="First Name" required>
+          </div>
+          <div class="col-sm-6 form-group">
+            <input type="text" name="lastname" class="form-control" placeholder="Last Name" required>
           </div>
         </div>
 
-        <!-- Submit -->
-        <div class="d-grid">
-          <button type="submit" class="btn btn-primary">Sign in</button>
+        <div class="form-group">
+          <input type="email" name="email" class="form-control" placeholder="Email" required>
+        </div>
+
+        <div class="form-group">
+          <input type="text" name="phone" class="form-control" placeholder="Phone" required>
+        </div>
+
+        <div class="form-group">
+          <input type="password" name="password" class="form-control" placeholder="Password" minlength="6" required>
+        </div>
+
+        <div class="form-group">
+          <input type="text" name="department" class="form-control" placeholder="Department (e.g. Front Office, Sales)" required>
+        </div>
+
+        <!-- StaffType (values match your CHECK constraint) -->
+        <div class="form-group">
+          <select name="type" id="staffType" class="form-select" required>
+            <option value="">-- Select Staff Type --</option>
+            <option value="FRONT_DESK">Front Desk</option>
+            <option value="MARKETING">Marketing Team</option>
+            <option value="MANAGER">Manager</option>
+            <option value="IT">IT Staff</option>
+          </select>
+        </div>
+
+        <!-- Role-specific fields (exactly as in DBInit.java) -->
+        <div id="extraFields"></div>
+
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+
+        <div class="auth-footer">
+          <p>Already have an account?
+            <a class="auth-link" href="<%=ctx%>/staff-signin.jsp">Sign in</a>
+          </p>
+        </div>
+
+        <div class="auth-copyright">
+          © <%= java.time.Year.now() %> Hotel Reservation System — Staff
         </div>
       </form>
-
-      <!-- Links / footer -->
-      <div class="text-center mt-4">
-        <small>
-          Don’t have an account?
-          <a href="<%=ctx%>/signup.jsp" class="text-decoration-none">Sign up</a>
-        </small>
-      </div>
-
-      <!-- Year auto-updates via java.time.Year on server -->
-      <div class="text-center mt-4">
-        <small class="text-muted">© <%= java.time.Year.now() %> 93 Hotel Reservation | Year 2 Semester 1 | Group 93</small>
-      </div>
-
     </div>
   </div>
 </div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Dynamic extra fields per staff type (DBInit-aligned) -->
+<script>
+  const typeSelect = document.getElementById('staffType');
+  const extraFieldsDiv = document.getElementById('extraFields');
+
+  function renderExtra(type) {
+    let html = '';
+    if (type === 'FRONT_DESK') {
+      html = `
+        <div class="form-group">
+          <input type="text" name="deskCode" class="form-control" placeholder="Desk Code" required>
+        </div>`;
+    } else if (type === 'MARKETING') {
+      html = `
+        <div class="form-group">
+          <input type="text"  name="campaignsManaged" class="form-control" placeholder="Campaign Name"  required>
+        </div>`;
+    } else if (type === 'MANAGER') {
+      html = `
+        <div class="form-group">
+          <input type="text" name="role" class="form-control" placeholder="Role (e.g., Duty Manager)" required>
+        </div>`;
+    } else if (type === 'IT') {
+      html = `
+        <div class="form-group">
+          <input type="text" name="specialization" class="form-control" placeholder="Specialization (e.g., Network, Backend)" required>
+        </div>`;
+    }
+    extraFieldsDiv.innerHTML = html;
+  }
+
+  typeSelect.addEventListener('change', () => renderExtra(typeSelect.value));
+</script>
 </body>
 </html>

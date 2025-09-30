@@ -95,7 +95,7 @@
       <div class="text-center mt-4">
         <small>
           Don’t have an account?
-          <a href="<%=ctx%>/signup.jsp" class="text-decoration-none">Sign up</a>
+          <a href="<%=ctx%>/staff-signup.jsp" class="text-decoration-none">Sign up</a>
         </small>
       </div>
 
