@@ -37,7 +37,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Jackson Core -->
+                     <!-- Jackson Core -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
@@ -65,9 +65,7 @@
             <version>2.2.224</version>
             <scope>runtime</scope>
         </dependency>
-
     </dependencies>
-
 
     <build>
         <plugins>
