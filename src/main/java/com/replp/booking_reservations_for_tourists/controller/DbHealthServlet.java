@@ -22,7 +22,7 @@ public class DbHealthServlet extends HttpServlet {
         // create Tourist, Staff, FrontDesk, MarketingTeam, Manager, ITStaff
         com.replp.booking_reservations_for_tourists.util.DBInit.init();
         // This will print in Tomcat logs when servlet is created
-        System.out.println("✅ DbHealthServlet loaded!");
+        System.out.println("DbHealthServlet loaded!");
     }
 
     @Override
@@ -34,11 +34,11 @@ public class DbHealthServlet extends HttpServlet {
             rs.next();
             int count = rs.getInt("n");
             resp.setContentType("text/plain");
-            resp.getWriter().println("DB OK ✅ Staff rows = " + count);
+            resp.getWriter().println("DB OK: Staff rows = " + count);
 
         } catch (Exception e) {
             resp.setStatus(500);
-            resp.getWriter().println("DB ERROR ❌ " + e.getMessage());
+            resp.getWriter().println("DB ERROR  " + e.getMessage());
         }
     }
 }

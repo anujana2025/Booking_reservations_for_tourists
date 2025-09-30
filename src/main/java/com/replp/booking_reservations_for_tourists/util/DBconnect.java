@@ -24,4 +24,3 @@ public class DBconnect {
         return DriverManager.getConnection(URL, USER, PASS);
     }
 }
-
