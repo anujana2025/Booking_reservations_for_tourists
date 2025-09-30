@@ -39,6 +39,19 @@
   }
 %>
 
+<%
+  String msg = (String) request.getAttribute("message");
+  if (msg == null) msg = request.getParameter("m");
+  String flash = (String) session.getAttribute("flash");
+  if (msg == null && flash != null) { msg = flash; session.removeAttribute("flash"); }
+%>
+<% if (msg != null && !msg.isEmpty()) { %>
+<div style="margin:12px 0;padding:12px 14px;border:1px solid #b6e0fe;background:#e8f4ff;color:#084c7f;border-radius:8px">
+  <%= msg %>
+</div>
+<% } %>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

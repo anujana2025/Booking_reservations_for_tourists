@@ -105,6 +105,31 @@
     </header>
 
     <div class="content-container" id="profile-edit-page">
+
+      <!-- ========== Flash / message area (forward, redirect, or session flash) ========== -->
+      <%
+        String msg = (String) request.getAttribute("message"); // set via req.setAttribute(...) + forward
+        if (msg == null) msg = request.getParameter("m");      // set via ...?m=Your+message (redirect)
+        String flash = (String) session.getAttribute("flash"); // set via session.setAttribute("flash", ...)
+        if (msg == null && flash != null) {
+          msg = flash;
+          session.removeAttribute("flash");
+        }
+      %>
+      <% if (msg != null && !msg.isEmpty()) { %>
+      <div style="
+      margin: 12px 0;
+      padding: 12px 14px;
+      border: 1px solid #b6e0fe;
+      background: #e8f4ff;
+      color: #084c7f;
+      border-radius: 8px;
+      font: 500 14px/1.4 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    ">
+        <%= msg %>
+      </div>
+      <% } %>
+
       <h1 class="page-title">Profile</h1>
 
       <div class="profile-container">

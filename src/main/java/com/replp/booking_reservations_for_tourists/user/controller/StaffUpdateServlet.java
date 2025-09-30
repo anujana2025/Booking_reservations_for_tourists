@@ -146,7 +146,7 @@ public class StaffUpdateServlet extends HttpServlet {
         session.setAttribute("staffPhone", phone == null ? "" : phone);
         session.setAttribute("staffEmail", email == null ? "" : email);
 
-        // ---- 5) Go back to profile page with a success message ----
+        // ---- 5) stay in profile edit page with a success message ----
         req.setAttribute("message", "Profile updated successfully.");
         req.getRequestDispatcher("staff-profile-edit.jsp").forward(req, resp);
     }
