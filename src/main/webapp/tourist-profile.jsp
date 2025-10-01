@@ -46,7 +46,7 @@
   <!-- Sidebar (no avatar) -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <a href="<%=ctx%>/tourist-dashboard.jsp" class="logo-container">
+      <a href="<%=ctx%>/index.jsp" class="logo-container">
         <img src="<%=ctx%>/assets/images/logo2.png" alt="93 hotel reservation" class="logo">
       </a>
     </div>
