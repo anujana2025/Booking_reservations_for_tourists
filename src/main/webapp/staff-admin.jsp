@@ -1,23 +1,16 @@
 <%--
-  IT Tools: Staff Administration
-  Requires session attribute: staffType == "IT"
-  Requires request attributes:
-    - staffList:   List<Staff> (from DB)
-    - touristList: List<Tourist> (from DB)
-  POST endpoints the page calls:
-    - <ctx>/it/staff-update
-    - <ctx>/it/staff-delete
-    - <ctx>/it/tourist-delete
+  IT Tools — Staff & Tourist Administration
+  Server renders exactly one subtype editor per row (no JS needed).
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<%! // --- reflection helpers (unchanged) ---
+<%!  /* Helpers so we don't need JSTL */
     private String str(Object o, String... names) {
         if (o == null) return "";
         Class<?> c = o.getClass();
         for (String n : names) {
-            try { var m = c.getMethod(n); Object v = m.invoke(o); return v == null ? "" : String.valueOf(v); } catch (Exception ignored) {}
-            try { var f = c.getField(n);  Object v = f.get(o);    return v == null ? "" : String.valueOf(v); } catch (Exception ignored) {}
+            try { var m = c.getMethod(n); Object v = m.invoke(o); return v==null?"":String.valueOf(v); } catch (Exception ignored) {}
+            try { var f = c.getField(n);  Object v = f.get(o);    return v==null?"":String.valueOf(v); } catch (Exception ignored) {}
         }
         return "";
     }
@@ -28,16 +21,19 @@
 %>
 
 <%
-    String ctx        = request.getContextPath();
+    String ctx = request.getContextPath();
+
+    // allow only IT users
     String staffType  = (String) session.getAttribute("staffType");
     String firstName  = (String) session.getAttribute("staffFirstName");
     String lastName   = (String) session.getAttribute("staffLastName");
-
     if (staffType == null) { response.sendRedirect(ctx + "/staff-signin.jsp"); return; }
     if (!"IT".equals(staffType)) { response.sendRedirect(ctx + "/staff-dashboard.jsp?error=forbidden"); return; }
 
+    // data from servlet
     java.util.List<?> staffList   = (java.util.List<?>) request.getAttribute("staffList");
     java.util.List<?> touristList = (java.util.List<?>) request.getAttribute("touristList");
+    if (staffList == null && touristList == null) { response.sendRedirect(ctx + "/it/admin"); return; }
 
     String ok  = request.getParameter("success");
     String err = request.getParameter("error");
@@ -48,28 +44,37 @@
 <head>
     <meta charset="UTF-8" />
     <title>IT Tools — Staff Admin</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="<%=ctx%>/assets/css/staff-dashboard.css">
     <link rel="stylesheet" href="<%=ctx%>/assets/css/staff-admin.css">
+
     <style>
-        /* small widths so Email/Phone fit nicely */
         .col-id{width:72px}
         .col-actions{width:240px}
         .col-phone{white-space:nowrap}
+
+        /* Toolbar spacing */
+        .toolbar{ display:flex; align-items:center; justify-content:flex-start; margin-top:12px; flex-wrap:wrap; gap:12px; }
+        .toolbar__left{ display:flex; align-items:center; flex-wrap:wrap; column-gap:12px; row-gap:16px; }
+        .toolbar__left > .search, .toolbar__left > .select, .toolbar__left > .input, .toolbar__left > .btn-group{ flex:1 1 260px; }
+        .btn-group{ display:flex; align-items:center; gap:12px; }
+
+        /* Subtype editors */
+        .subwrap{display:block; max-width:520px}
+        .sub__label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px 2px}
     </style>
 </head>
 <body>
 <div class="layout">
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="sidebar__header">
-            <img src="<%=ctx%>/assets/images/logo2.png" alt="Logo" class="logo">
-        </div>
+        <div class="sidebar__header"><img src="<%=ctx%>/assets/images/logo2.png" alt="Logo" class="logo"></div>
         <div class="sidebar__nav">
             <ul class="nav">
                 <li><a class="nav__link" href="<%=ctx%>/staff-dashboard.jsp"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></a></li>
-                <li><a class="nav__link" href="<%=ctx%>/staff-admin.jsp"><i class="fa-solid fa-users-gear"></i><span>IT Tools</span></a></li>
+                <li><a class="nav__link" href="<%=ctx%>/it/admin"><i class="fa-solid fa-users-gear"></i><span>IT Tools</span></a></li>
                 <li><a class="nav__link" href="<%=ctx%>/staff-profile.jsp"><i class="fa-regular fa-user"></i><span>My Profile</span></a></li>
             </ul>
         </div>
@@ -93,19 +98,37 @@
         </div>
 
         <div class="container">
-            <% if (ok != null) { %>
-            <div class="alert alert--success"><i class="fa-solid fa-circle-check"></i> Action completed successfully.</div>
-            <% } %>
-            <% if (err != null) { %>
-            <div class="alert alert--error"><i class="fa-solid fa-triangle-exclamation"></i> <%= err %></div>
-            <% } %>
+            <% if (ok != null) { %><div class="alert alert--success"><i class="fa-solid fa-circle-check"></i> Action completed successfully.</div><% } %>
+            <% if (err != null) { %><div class="alert alert--error"><i class="fa-solid fa-triangle-exclamation"></i> <%= err %></div><% } %>
 
-            <!-- ================= STAFF DIRECTORY ================= -->
+            <!-- Filters -->
             <section class="page-intro">
                 <h2>Staff Directory</h2>
                 <p>Edit staff type, department and subtype attributes. Email & Phone are separate columns.</p>
+
+                <form class="toolbar" method="get" action="<%=ctx%>/it/admin">
+                    <div class="toolbar__left">
+                        <div class="search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" name="q" placeholder="Search name, email, phone…" value="<%= request.getParameter("q")!=null?request.getParameter("q"):"" %>">
+                        </div>
+                        <select name="role" class="select">
+                            <option value="">All Roles</option>
+                            <option value="FRONT_DESK" <%= "FRONT_DESK".equals(request.getParameter("role"))?"selected":"" %>>FRONT_DESK</option>
+                            <option value="MARKETING"  <%= "MARKETING".equals(request.getParameter("role")) ?"selected":"" %>>MARKETING</option>
+                            <option value="MANAGER"    <%= "MANAGER".equals(request.getParameter("role"))   ?"selected":"" %>>MANAGER</option>
+                            <option value="IT"         <%= "IT".equals(request.getParameter("role"))        ?"selected":"" %>>IT</option>
+                        </select>
+                        <input type="text" class="input" name="dept" placeholder="Department filter" value="<%= request.getParameter("dept")!=null?request.getParameter("dept"):"" %>">
+                        <div class="btn-group">
+                            <button class="btn btn--primary" type="submit"><i class="fa-solid fa-filter"></i> Apply</button>
+                            <a class="btn btn--ghost" href="<%=ctx%>/it/admin"><i class="fa-solid fa-rotate-right"></i> Reset</a>
+                        </div>
+                    </div>
+                </form>
             </section>
 
+            <!-- Staff table -->
             <div class="card card--table">
                 <div class="table-responsive">
                     <table class="table">
@@ -134,14 +157,14 @@
                                 String fn   = str(s, "getFirstName","firstName","FirstName");
                                 String ln   = str(s, "getLastName","lastName","LastName");
                                 String email= str(s, "getEmail","email","Email");
-                                String phone= str(s, "getPhone","getPhoneNumber","phone","PhoneNumber");
+                                String phone= str(s, "getPhoneNumber","getPhone","phone","PhoneNumber");
                                 String type = str(s, "getStaffType","staffType","type","role");
                                 if (type == null || type.isEmpty()) type = "FRONT_DESK";
                                 String dept = str(s, "getDepartment","department","Department");
 
                                 String deskCode        = str(s, "getDeskCode","deskCode","DeskCode");
                                 String campaignsManaged= str(s, "getCampaignsManaged","campaignsManaged","CampaignsManaged");
-                                String managerRole     = str(s, "getManagerRole","managerRole","ManagerRole");
+                                String managerRole     = str(s, "getManagerRole","managerRole","ManagerRole","Role");
                                 String specialization  = str(s, "getSpecialization","specialization","Specialization");
 
                                 String rowId = "r" + (++rowIdx);
@@ -152,11 +175,12 @@
                             <td><i class="fa-regular fa-envelope"></i> <%= email %></td>
                             <td class="col-phone"><i class="fa-solid fa-phone"></i> <%= phone %></td>
 
-                            <form method="post" action="<%=ctx%>/it/staff-update" class="inline-form" onsubmit="return validateRow('<%=rowId%>')">
+                            <form method="post" action="<%=ctx%>/it/admin" class="inline-form" onsubmit="return validateRow('<%=rowId%>')">
+                                <input type="hidden" name="action" value="staff.update">
                                 <input type="hidden" name="staffId" value="<%=id%>">
 
                                 <td>
-                                    <select name="staffType" class="select select--sm" id="<%=rowId%>-type" onchange="toggleSubtype('<%=rowId%>')">
+                                    <select name="staffType" class="select select--sm" id="<%=rowId%>-type">
                                         <option value="FRONT_DESK" <%= "FRONT_DESK".equals(type)?"selected":"" %>>FRONT_DESK</option>
                                         <option value="MARKETING"  <%= "MARKETING".equals(type) ?"selected":"" %>>MARKETING</option>
                                         <option value="MANAGER"    <%= "MANAGER".equals(type)   ?"selected":"" %>>MANAGER</option>
@@ -169,41 +193,35 @@
                                 </td>
 
                                 <td>
-                                    <div class="subwrap" id="<%=rowId%>-sub">
-                                        <div class="sub sub--FRONT_DESK">
-                                            <label class="sub__label">Desk Code</label>
-                                            <input type="text" class="input input--sm" name="deskCode" value="<%= deskCode %>" placeholder="e.g. FD-01">
-                                        </div>
-                                        <div class="sub sub--MARKETING">
-                                            <label class="sub__label">Campaigns Managed</label>
-                                            <input type="text" class="input input--sm" name="campaignsManaged" value="<%= campaignsManaged %>" placeholder="e.g. Summer Promo">
-                                        </div>
-                                        <div class="sub sub--MANAGER">
-                                            <label class="sub__label">Manager Role</label>
-                                            <input type="text" class="input input--sm" name="managerRole" value="<%= managerRole %>" placeholder="e.g. Operations Manager">
-                                        </div>
-                                        <div class="sub sub--IT">
-                                            <label class="sub__label">Specialization</label>
-                                            <input type="text" class="input input--sm" name="specialization" value="<%= specialization %>" placeholder="e.g. DevOps, SecOps">
-                                        </div>
+                                    <div class="subwrap">
+                                        <% if ("FRONT_DESK".equals(type)) { %>
+                                        <label class="sub__label">Desk Code</label>
+                                        <input type="text" class="input input--sm" name="deskCode" value="<%= deskCode %>" placeholder="e.g. FD-01">
+                                        <% } else if ("MARKETING".equals(type)) { %>
+                                        <label class="sub__label">Campaigns Managed</label>
+                                        <input type="text" class="input input--sm" name="campaignsManaged" value="<%= campaignsManaged %>" placeholder="e.g. Summer Promo">
+                                        <% } else if ("MANAGER".equals(type)) { %>
+                                        <label class="sub__label">Manager Role</label>
+                                        <input type="text" class="input input--sm" name="managerRole" value="<%= managerRole %>" placeholder="e.g. Operations Manager">
+                                        <% } else { %> <%-- IT --%>
+                                        <label class="sub__label">Specialization</label>
+                                        <input type="text" class="input input--sm" name="specialization" value="<%= specialization %>" placeholder="e.g. DevOps, SecOps">
+                                        <% } %>
                                     </div>
                                 </td>
 
                                 <td class="col-actions">
-                                    <button class="btn btn--primary btn--sm" type="submit">
-                                        <i class="fa-solid fa-floppy-disk"></i> Save
-                                    </button>
+                                    <button class="btn btn--primary btn--sm" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                             </form>
 
-                            <form method="post" action="<%=ctx%>/it/staff-delete" class="inline-form" onsubmit="return confirm('Delete staff #<%=id%>? This cannot be undone.');">
+                            <form method="post" action="<%=ctx%>/it/admin" class="inline-form"
+                                  onsubmit="return confirm('Delete staff #<%=id%>? This cannot be undone.');">
+                                <input type="hidden" name="action" value="staff.delete">
                                 <input type="hidden" name="staffId" value="<%=id%>">
-                                <button class="btn btn--ghost btn--sm" type="submit">
-                                    <i class="fa-solid fa-trash"></i> Delete
-                                </button>
+                                <button class="btn btn--ghost btn--sm" type="submit"><i class="fa-solid fa-trash"></i> Delete</button>
                             </form>
                             </td>
                         </tr>
-                        <script>document.addEventListener('DOMContentLoaded',()=>toggleSubtype('<%=rowId%>'));</script>
                         <%
                                 } // for
                             } // else
@@ -213,10 +231,10 @@
                 </div>
             </div>
 
-            <!-- ================= TOURIST DIRECTORY ================= -->
+            <!-- Tourist Directory -->
             <section class="page-intro" style="margin-top:22px">
                 <h2>Tourist Directory</h2>
-                <p>Email & Phone are separate. Delete accounts when needed.</p>
+                <p>Email & Phone are separate. Delete accounts when required.</p>
             </section>
 
             <div class="card card--table">
@@ -251,11 +269,11 @@
                             <td><i class="fa-regular fa-envelope"></i> <%= temail %></td>
                             <td class="col-phone"><i class="fa-solid fa-phone"></i> <%= tph %></td>
                             <td class="col-actions">
-                                <form method="post" action="<%=ctx%>/it/tourist-delete" onsubmit="return confirm('Delete tourist #<%=tid%>? This cannot be undone.');">
+                                <form method="post" action="<%=ctx%>/it/admin"
+                                      onsubmit="return confirm('Delete tourist #<%=tid%>? This cannot be undone.');">
+                                    <input type="hidden" name="action" value="tourist.delete">
                                     <input type="hidden" name="touristId" value="<%=tid%>">
-                                    <button class="btn btn--ghost btn--sm" type="submit">
-                                        <i class="fa-solid fa-trash"></i> Delete
-                                    </button>
+                                    <button class="btn btn--ghost btn--sm" type="submit"><i class="fa-solid fa-trash"></i> Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -268,25 +286,20 @@
                 </div>
             </div>
 
-        </div><!-- /container -->
+        </div>
 
         <footer class="main__footer">© 2025 • 93 Hotel Reservation • Y2S1 • Group 93</footer>
     </main>
 </div>
 
 <script>
-    function toggleSubtype(rowId) {
-        const select = document.getElementById(rowId + '-type');
-        if (!select) return;
-        const value = select.value; // FRONT_DESK / MARKETING / MANAGER / IT
-        const wrap  = document.getElementById(rowId + '-sub');
-        if (!wrap) return;
-        wrap.querySelectorAll('.sub').forEach(el => el.style.display = 'none');
-        const block = wrap.querySelector('.sub--' + value);
-        if (block) block.style.display = '';
-    }
+    // just fade alerts; no subtype JS needed anymore
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.alert').forEach(a =>
+            setTimeout(() => a.classList.add('is-hidden'), 2400)
+        );
+    });
     function validateRow(){ return true; }
-    document.querySelectorAll('.alert').forEach(a => setTimeout(()=>a.classList.add('is-hidden'), 2400));
 </script>
 </body>
 </html>

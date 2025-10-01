@@ -1,4 +1,4 @@
-/* ===== Alerts ===== */
+/* Alerts */
 .alert{
     display:flex; align-items:center; gap:10px;
     border-radius:10px; padding:12px 14px; margin:12px 0;
@@ -9,47 +9,35 @@
 .alert--error{border-color:#fde0df; background:#fff5f5; color:#b5473f}
 .alert.is-hidden{opacity:0; transform:translateY(-4px); transition:.3s ease}
 
-/* ===== Card + Table ===== */
+/* Card + Table */
 .card--table{padding:0}
-.table-responsive{
-    overflow:auto;
-    border:1px solid var(--border);
-    border-radius:14px;
-    background:#fff
-}
-.table{width:100%; border-collapse:separate; border-spacing:0; table-layout:auto}
+.table-responsive{overflow:auto; border:1px solid var(--border); border-radius:14px; background:#fff}
+.table{width:100%; border-collapse:separate; border-spacing:0}
 .table thead th{
     text-align:left; font-size:12px; color:var(--muted); font-weight:600;
     letter-spacing:.02em; padding:12px 14px; border-bottom:1px solid var(--border);
     background:#fbfbfb; position:sticky; top:0; z-index:1; white-space:nowrap
 }
-.table tbody td{
-    padding:14px; border-bottom:1px solid var(--border);
-    vertical-align:top; font-size:14px
-}
+.table tbody td{padding:14px; border-bottom:1px solid var(--border); vertical-align:top; font-size:14px}
 .table tbody tr:hover{background:#fbfdfc}
-
-/* Fixed-ish widths so Email/Phone render cleanly on desktop */
-.col-id{width:72px}
 .col-actions{width:240px}
 .col-phone{white-space:nowrap}
 
-/* ===== Inputs ===== */
+/* Inputs */
 .select, .input{
     background:#fff; border:1px solid var(--border);
-    border-radius:10px; padding:8px 10px; font:inherit; width:100%
+    border-radius:10px; padding:8px 10px; font:inherit
 }
 .select--sm, .input--sm{ padding:6px 8px; border-radius:8px }
 .input--sm{ min-width:160px }
 .select{ min-width:160px }
 
-/* ===== Subtype editors ===== */
+/* Subtype editors */
 .subwrap{display:block; max-width:520px}
 .sub{display:none}
 .sub__label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px 2px}
-.sub input{width:100%}
 
-/* ===== Buttons ===== */
+/* Buttons */
 .btn{
     display:inline-flex; align-items:center; gap:8px;
     padding:10px 12px; border-radius:10px;
@@ -61,37 +49,42 @@
 .btn--primary{ background:var(--primary); color:#fff; border-color:var(--primary) }
 .btn--ghost{ background:#fff }
 .btn--sm{ padding:6px 10px; border-radius:8px; font-size:12px }
-
-/* Inline forms (Save + Delete side-by-side) */
 .inline-form{ display:inline }
 
-/* Muted small text (emails/phones) */
-.muted{ color:var(--muted); font-size:12px }
-
-/* Empty state */
-.empty{
-    text-align:center; color:var(--muted); padding:30px 10px
+/* Toolbar (filters) */
+.toolbar{
+    display:flex; align-items:center; justify-content:flex-start;
+    margin-top:12px; flex-wrap:wrap; gap:12px;
 }
+.toolbar__left{
+    display:flex; align-items:center; flex-wrap:wrap;
+    column-gap:12px; row-gap:14px;   /* vertical space between rows */
+}
+.toolbar__left > .search,
+.toolbar__left > .select,
+.toolbar__left > .input,
+.toolbar__left > .btn-group{ flex:1 1 260px; }
+.search{
+    display:flex; align-items:center; gap:8px;
+    background:#fff; border:1px solid var(--border);
+    border-radius:10px; padding:8px 10px; min-width:260px
+}
+.search input{ border:none; outline:none; width:100%; font:inherit }
+.btn-group{ display:flex; align-items:center; gap:12px } /* Apply & Reset spacing */
 
-/* ===== Responsive tweaks ===== */
+/* Misc */
+.muted{color:var(--muted); font-size:12px}
+.empty{text-align:center; color:var(--muted); padding:30px 10px}
+
+/* Responsive */
 @media (max-width: 1100px){
     .col-actions{width:200px}
     .select{min-width:140px}
     .input--sm{min-width:140px}
 }
-@media (max-width: 900px){
-    .table thead th:nth-child(3),  /* Email */
-    .table tbody td:nth-child(3){ white-space:normal }
-    .col-actions{width:180px}
-}
 @media (max-width: 720px){
     .table{ font-size:13px }
     .table thead th{ font-size:11px }
-    .input--sm,.select--sm{ min-width:120px }
-    .col-actions{ width:160px }
-}
-@media (max-width: 560px){
-    .col-actions{ width:140px }
     .btn--sm{ padding:6px 8px; font-size:11px }
-    .input--sm,.select--sm{ min-width:0 }
+    .select,.input{ min-width:0 }
 }
