@@ -81,7 +81,9 @@
         <div class="mb-3">
           <input type="password" name="password" class="form-control" placeholder="Password" required>
           <div class="text-end mt-1">
-            <a href="<%=ctx%>/staff-forgot-password.jsp" class="text-decoration-none small">Forgot Password?</a>
+                <a href="<%=request.getContextPath()%>/forgot-password.jsp?actor=staff" class="text-decoration-none small">
+                   Forgot password?
+                </a>
           </div>
         </div>
 
